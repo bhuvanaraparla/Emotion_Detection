@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emotion Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Top Image Div -->
+    <div class="top-image">
+        <img src="{{ url_for('static', filename='emotions.png') }}" alt="Emotion Image">
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Emotion Detection</h1>
+        <h2>Enter Text for Emotion Detection</h2>
+        <form id="text-form">
+            <textarea id="text" name="text" rows="4" cols="50" required placeholder="Type your text here..."></textarea>
+            <br><br>
+            <button type="submit" class="submit-btn">Predict Emotion</button>
+        </form>
+        <p id="text-result" class="result-text"></p>
+    </div>
+
+    <script>
+        const textForm = document.getElementById('text-form');
+        textForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const textInput = document.getElementById('text').value;
+
+            try {
+                const response = await fetch('/predict-text', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: textInput })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error predicting emotion');
+                }
+
+                const result = await response.json();
+                document.getElementById('text-result').innerText = `Predicted Emotion: ${result.emotion}`;
+            } catch (error) {
+                document.getElementById('text-result').innerText = `Error: ${error.message}`;
+            }
+        };
+    </script>
+</body>
+</html>
