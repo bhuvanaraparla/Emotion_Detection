@@ -1,27 +1,33 @@
 from flask import Flask, request, jsonify, render_template
-from tensorflow.keras.models import load_model
+import requests
+import tensorflow as tf
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import numpy as np
 import pickle
+from io import BytesIO
 import os
 
 app = Flask(__name__, static_folder='static')
 
 # URL of the hosted model file
-MODEL_URL = 'https://drive.google.com/file/d/1NdreR9gWjP__ye168d46I5BxU1mQs7cJ/view?usp=sharing'
+MODEL_URL = 'https://drive.google.com/uc?export=download&id=1NdreR9gWjP__ye168d46I5BxU1mQs7cJ'
 
-# Download and load the model
-def load_model():
+# Function to download and load the model
+def download_and_load_model():
     response = requests.get(MODEL_URL)
     if response.status_code == 200:
         model_file = BytesIO(response.content)
-        return tf.keras.models.load_model(model_file)
+        temp_model_path = 'temp_model.h5'
+        with open(temp_model_path, 'wb') as f:
+            f.write(model_file.getbuffer())
+        model = tf.keras.models.load_model(temp_model_path)
+        os.remove(temp_model_path)  # Clean up the temporary file
+        return model
     else:
         raise Exception("Failed to download the model file")
 
-
 # Load the pre-trained model
-model = load_model()
+model = download_and_load_model()
 
 # Try to load the tokenizer
 try:
