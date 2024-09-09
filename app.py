@@ -7,9 +7,21 @@ import os
 
 app = Flask(__name__, static_folder='static')
 
+# URL of the hosted model file
+MODEL_URL = 'https://drive.google.com/file/d/1NdreR9gWjP__ye168d46I5BxU1mQs7cJ/view?usp=sharing'
+
+# Download and load the model
+def load_model():
+    response = requests.get(MODEL_URL)
+    if response.status_code == 200:
+        model_file = BytesIO(response.content)
+        return tf.keras.models.load_model(model_file)
+    else:
+        raise Exception("Failed to download the model file")
+
 
 # Load the pre-trained model
-model = load_model('emotion_model.h5')
+model = load_model()
 
 # Try to load the tokenizer
 try:
