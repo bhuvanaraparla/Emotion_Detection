@@ -9,8 +9,9 @@ import os
 
 app = Flask(__name__, static_folder='static')
 
-# URL of the hosted model file
-MODEL_URL = 'https://drive.google.com/uc?export=download&id=1NdreR9gWjP__ye168d46I5BxU1mQs7cJ'
+# Google Drive file ID
+MODEL_FILE_ID = '1NdreR9gWjP__ye168d46I5BxU1mQs7cJ'
+MODEL_URL = f'https://drive.google.com/uc?export=download&id={MODEL_FILE_ID}'
 
 # Function to download and load the model
 def download_and_load_model():
