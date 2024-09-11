@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emotion Detection</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Additional button styles for loading and done states */
+        .submit-btn.loading {
+            background-color: #FFC107; /* Loading color */
+        }
+        
+        .submit-btn.done {
+            background-color: #28A745; /* Done color */
+        }
+    </style>
 </head>
 <body>
     <!-- Top Image Div -->
@@ -26,9 +36,15 @@
 
     <script>
         const textForm = document.getElementById('text-form');
+        const submitBtn = document.querySelector('.submit-btn');
+        const resultText = document.getElementById('text-result');
+
         textForm.onsubmit = async (e) => {
             e.preventDefault();
             const textInput = document.getElementById('text').value;
+
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
 
             try {
                 const response = await fetch('/predict-text', {
@@ -44,9 +60,14 @@
                 }
 
                 const result = await response.json();
-                document.getElementById('text-result').innerText = `Predicted Emotion: ${result.emotion}`;
+                resultText.innerText = `Predicted Emotion: ${result.emotion}`;
+                submitBtn.classList.remove('loading');
+                submitBtn.classList.add('done');
             } catch (error) {
-                document.getElementById('text-result').innerText = `Error: ${error.message}`;
+                resultText.innerText = `Error: ${error.message}`;
+                submitBtn.classList.remove('loading');
+            } finally {
+                submitBtn.disabled = false;
             }
         };
     </script>
