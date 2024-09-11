@@ -1,36 +1,24 @@
 from flask import Flask, request, jsonify, render_template
-import requests
 import tensorflow as tf
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import numpy as np
 import pickle
-from io import BytesIO
 import os
 
 app = Flask(__name__, static_folder='static')
 
-# Google Drive file ID
-MODEL_FILE_ID = '1NdreR9gWjP__ye168d46I5BxU1mQs7cJ'
-MODEL_URL = f'https://drive.google.com/uc?export=download&id={MODEL_FILE_ID}'
+# Path to the model file included in the repository
+MODEL_FILE_PATH = 'emotion-model.h5'
 
-# Function to download and load the model
-def download_and_load_model():
-    response = requests.get(MODEL_URL)
-    if response.status_code == 200:
-        model_file = BytesIO(response.content)
-        temp_model_path = 'temp_model.h5'
-        with open(temp_model_path, 'wb') as f:
-            f.write(model_file.getbuffer())
-        model = tf.keras.models.load_model(temp_model_path)
-        os.remove(temp_model_path)  # Clean up the temporary file
+def load_model_from_file():
+    if os.path.exists(MODEL_FILE_PATH):
+        model = tf.keras.models.load_model(MODEL_FILE_PATH)
         return model
     else:
-        raise Exception("Failed to download the model file")
+        raise Exception(f"Model file '{MODEL_FILE_PATH}' not found")
 
-# Load the pre-trained model
-model = download_and_load_model()
+model = load_model_from_file()
 
-# Try to load the tokenizer
 try:
     with open('tokenizer.pickle', 'rb') as handle:
         tokenizer = pickle.load(handle)
@@ -38,7 +26,6 @@ except FileNotFoundError:
     print("Error: 'tokenizer.pickle' file not found.")
     tokenizer = None  # Set to None or handle appropriately
 
-# Emotion labels
 emotion_names = ["Sadness", "Joy", "Love", "Anger", "Fear", "Surprise"]
 
 # Route to serve the HTML form (index.html)
@@ -63,8 +50,7 @@ def predict_text_emotion():
 
     # Preprocess the input text (tokenization and padding)
     sequences = tokenizer.texts_to_sequences([text])
-    padded_sequence = pad_sequences(sequences, maxlen=100)  # Adjust maxlen based on your model
-
+    padded_sequence = pad_sequences(sequences, maxlen=100)  
     # Predict emotion using the loaded model
     prediction = model.predict(padded_sequence)
     predicted_emotion = emotion_names[np.argmax(prediction)]
